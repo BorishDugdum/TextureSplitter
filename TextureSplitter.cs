@@ -1,87 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+// Created by Warren Smith
+// Used in Dark Flame (www.DarkFlameGame.com)
+// Class used to break an image into multiple pieces
 
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
 
-namespace Zobenbralu
+namespace Nobody_Cares
 {
     public class TextureSplitter
     {
+        //This will be used for the list of new 'Image Pieces' later
         public struct TexturePieces
         {
             public Texture2D Texture;
-            public float GravityWeight;
             public Vector2 Displacement;
 
-            public TexturePieces(Texture2D texture, Vector2 displacement, float gravity)
+            public TexturePieces(Texture2D texture, Vector2 displacement)
             {
                 this.Texture = texture;
-                this.GravityWeight = gravity;
                 this.Displacement = displacement;
             }
         }
+        
+        //Public usage of new TexturePieces
         public List<TexturePieces> Textures;
 
-        //ContentManager content;
-        //public void LoadContent(ContentManager content)
-        //{
-        //    this.content = content;
-        //}
-
-
-        public void DisassembleTexture(Texture2D texture, string damageType)
+        /// <summary>
+        /// Method used to "Break Image" to multiple pieces
+        /// </summary>
+        /// <param name="texture">The texture used</param>
+        /// <param name="widthBreaks">Number of times the image will be divided into horizontally</param>
+        /// <param name="heightBreaks">Number of times the image will be divided into vertically</param>
+        public void DisassembleTexture(Texture2D texture, int widthBreaks, int heightBreaks)
         {
             Textures = new List<TexturePieces>();
 
-            //int x = 0, y = 0;
-            int width = texture.Width / 4, height = texture.Height / 4;
-            
-
-            switch (damageType)
-            {
-                case "AirDMG":
-                    width = texture.Width / 8;
-                    height = texture.Height / 8;
-                    break;
-                case "DissipateBurn":
-                    width = texture.Width / 5;
-                    height = texture.Height / 15;
-                    break;
-                case "DissipateBurnUp":
-                    width = texture.Width / 4;
-                    height = texture.Height / 10;
-                    break;
-                case "SpineBurn":
-                    width = texture.Width / 7;
-                    height = texture.Height / 15;
-                    break;
-                case "HeavyKnightExplosion":
-                    width = texture.Width / 10;
-                    height = texture.Height / 10;
-                    break;
-                case "Charred Spirit Explosion":
-                    width = texture.Width / 7;
-                    height = texture.Height / 7;
-                    break;
-                case "Shield":
-                    width = texture.Width / 3;
-                    height = texture.Height / 3;
-                    break;
-                case "Wall":
-                    width = 10;
-                    height = 10;
-                    break;
-                case "Large Dust":
-                    width = texture.Width / 15;
-                    height = texture.Height / 15;
-                    break;
-                default:
-                    break;
-            }
+            int width = texture.Width / widthBreaks, 
+                height = texture.Height / heightBreaks;
 
             int xCap = texture.Width / width;
             int yCap = texture.Height / height;
@@ -91,11 +47,10 @@ namespace Zobenbralu
                 for (int y = 0; y < yCap; y++)
                 {
                     bool empty = true;
-                    //4 Pieces Evenly//
+                    
                     TexturePieces tp = new TexturePieces(
-                        CropImage(ref empty, texture, damageType, new Rectangle(x * width, y * height, width, height)),
-                        new Vector2(-x * width, y * height),
-                        6);
+                        CropImage(ref empty, texture, new Rectangle(x * width, y * height, width, height)),
+                        new Vector2(-x * width, y * height));
 
                     if(!empty)
                         Textures.Add(tp);
@@ -105,7 +60,14 @@ namespace Zobenbralu
             
         }
 
-        private Texture2D CropImage(ref bool empty, Texture2D tileSheet, string damageType, Rectangle tileArea)
+        /// <summary>
+        /// Method to return a 'Section' of the texture passed in
+        /// </summary>
+        /// <param name="empty">Used to check if the whole image is empty (Alpha value == 0f)</param>
+        /// <param name="tileSheet">Texture used</param>
+        /// <param name="tileArea">Size of new 'Image Piece'</param>
+        /// <returns>New 'Image Piece'</returns>
+        private Texture2D CropImage(ref bool empty, Texture2D tileSheet, Rectangle tileArea)
         {
             if (tileArea.Width == 0)
                 tileArea.Width = 1;
@@ -126,38 +88,15 @@ namespace Zobenbralu
 
             int index = 0;
 
-            switch (damageType)
+            for (int y = tileArea.Y; y < tileArea.Y + tileArea.Height; y++)
             {
-                case "AirDMG":
-                    for (int y = tileArea.Y; y < tileArea.Y + tileArea.Height; y++)
-                    {
-                        for (int x = tileArea.X; x < tileArea.X + tileArea.Width; x++)
-                        {
-                            croppedImageData[index] = tileSheetData[y * tileSheet.Width + x];
-                            if (croppedImageData[index].A != 0)
-                            {
-                                empty = false;
-                                //croppedImageData[index] = new Color(
-                                //    croppedImageData[index].R + (byte)25,
-                                //    croppedImageData[index].G + (byte)25,
-                                //    croppedImageData[index].B + (byte)25);
-                            }
-                            index++;
-                        }
-                    }
-                    break;
-                default:
-                    for (int y = tileArea.Y; y < tileArea.Y + tileArea.Height; y++)
-                    {
-                        for (int x = tileArea.X; x < tileArea.X + tileArea.Width; x++)
-                        {
-                            croppedImageData[index] = tileSheetData[y * tileSheet.Width + x];
-                            if (croppedImageData[index].A != 0)
-                                empty = false;
-                            index++;
-                        }
-                    }
-                    break;
+                for (int x = tileArea.X; x < tileArea.X + tileArea.Width; x++)
+                {
+                    croppedImageData[index] = tileSheetData[y * tileSheet.Width + x];
+                    if (croppedImageData[index].A != 0)
+                        empty = false;
+                    index++;
+                }
             }
             
             croppedImage.SetData<Color>(croppedImageData);
