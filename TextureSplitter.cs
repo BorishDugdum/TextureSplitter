@@ -56,8 +56,6 @@ namespace Nobody_Cares
                         Textures.Add(tp);
                 }
             }
-
-            
         }
 
         /// <summary>
@@ -102,6 +100,5 @@ namespace Nobody_Cares
             croppedImage.SetData<Color>(croppedImageData);
             return croppedImage;
         }
-
     }
 }
